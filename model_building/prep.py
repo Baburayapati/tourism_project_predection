@@ -2,18 +2,20 @@ import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from huggingface_hub import Repository
+from huggingface_hub import Repository, HfApi, create_repo, RepositoryNotFoundError
 import shutil
 
 # --- Step 0: HF token ---
-HF_TOKEN = os.getenv("HF_TOKEN") or "os.environ['HF_TOKEN']"
+HF_TOKEN = os.getenv("HF_TOKEN")
+if not HF_TOKEN:
+    raise ValueError("HF_TOKEN environment variable is not set. Please set it in GitHub Secrets.")
 
 # --- Step 1: Load dataset ---
 DATASET_PATH = "https://huggingface.co/datasets/BabuRayapati/tourism_project/raw/main/tourism.csv"
 df = pd.read_csv(DATASET_PATH)
 print("Dataset loaded successfully.")
 
-# Drop UDI if exists
+# Drop 'UDI' if exists
 if "UDI" in df.columns:
     df.drop(columns=["UDI"], inplace=True)
 
@@ -24,6 +26,9 @@ if "Type" in df.columns:
 
 # --- Step 2: Split data ---
 target_col = "ProdTaken"
+if target_col not in df.columns:
+    raise KeyError(f"Target column '{target_col}' not found in dataset.")
+
 X = df.drop(columns=[target_col])
 y = df[target_col]
 
@@ -37,15 +42,27 @@ ytrain.to_csv("temp_csvs/ytrain.csv", index=False)
 ytest.to_csv("temp_csvs/ytest.csv", index=False)
 print("Local CSV files created successfully.")
 
-# --- Step 4: Upload to HF Dataset Repo using Repository ---
+# --- Step 4: Upload to Hugging Face Dataset Repo ---
 repo_id = "BabuRayapati/tourism_project"
+repo_type = "dataset"
 repo_url = f"https://huggingface.co/datasets/{repo_id}"
 repo_local_path = "temp_repo"
+
+api = HfApi(token=HF_TOKEN)
+
+# Check if repo exists
+try:
+    api.repo_info(repo_id=repo_id, repo_type=repo_type)
+    print(f"Dataset repo '{repo_id}' exists. Using it.")
+except Exception:
+    print(f"Dataset repo '{repo_id}' not found. Creating...")
+    create_repo(repo_id=repo_id, repo_type=repo_type, private=False, token=HF_TOKEN)
+    print(f"Dataset repo '{repo_id}' created.")
 
 # Clone the repo locally
 repo = Repository(local_dir=repo_local_path, clone_from=repo_url, use_auth_token=HF_TOKEN)
 
-# Copy CSVs to repo folder
+# Copy CSV files to repo folder
 shutil.copytree("temp_csvs", repo_local_path, dirs_exist_ok=True)
 
 # Commit and push
