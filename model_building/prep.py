@@ -1,26 +1,30 @@
-from huggingface_hub import Repository, HfApi, create_repo, HfHubHTTPError
 import pandas as pd
 import os
 import shutil
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from huggingface_hub import Repository, HfApi, create_repo
+from huggingface_hub.utils import HfHubHTTPError  # <- correct import
 
+# --- Step 0: HF token ---
 HF_TOKEN = os.getenv("HF_TOKEN")
 if not HF_TOKEN:
     raise ValueError("HF_TOKEN environment variable is not set")
 
-# --- Load dataset ---
+# --- Step 1: Load dataset ---
 DATASET_PATH = "https://huggingface.co/datasets/BabuRayapati/tourism_project/raw/main/tourism.csv"
 df = pd.read_csv(DATASET_PATH)
 print("Dataset loaded successfully.")
 
+# Drop UDI if exists
 if "UDI" in df.columns:
     df.drop(columns=["UDI"], inplace=True)
 
+# Encode categorical columns
 if "Type" in df.columns:
     df["Type"] = LabelEncoder().fit_transform(df["Type"])
 
-# --- Split data ---
+# --- Step 2: Split data ---
 target_col = "ProdTaken"
 if target_col not in df.columns:
     raise KeyError(f"Target column '{target_col}' not found in dataset.")
@@ -30,7 +34,7 @@ y = df[target_col]
 
 Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# --- Save CSV locally ---
+# --- Step 3: Save CSV locally ---
 os.makedirs("temp_csvs", exist_ok=True)
 Xtrain.to_csv("temp_csvs/Xtrain.csv", index=False)
 Xtest.to_csv("temp_csvs/Xtest.csv", index=False)
@@ -38,7 +42,7 @@ ytrain.to_csv("temp_csvs/ytrain.csv", index=False)
 ytest.to_csv("temp_csvs/ytest.csv", index=False)
 print("Local CSV files created successfully.")
 
-# --- Upload to HF Dataset Repo ---
+# --- Step 4: Upload to HF Dataset Repo using Repository ---
 repo_id = "BabuRayapati/tourism_project"
 repo_type = "dataset"
 repo_url = f"https://huggingface.co/datasets/{repo_id}"
