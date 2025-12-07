@@ -7,26 +7,23 @@ import shutil
 
 # --- Step 0: HF token ---
 HF_TOKEN = os.getenv("HF_TOKEN")
-if not HF_TOKEN:
-    raise ValueError("HF_TOKEN environment variable is not set. Please set it in GitHub Actions secrets.")
 
 # --- Step 1: Load dataset ---
 DATASET_PATH = "https://huggingface.co/datasets/BabuRayapati/tourism_project/raw/main/tourism.csv"
 df = pd.read_csv(DATASET_PATH)
 print("Dataset loaded successfully.")
 
-# Drop unnecessary columns if exist
+# Drop UDI if exists
 if "UDI" in df.columns:
     df.drop(columns=["UDI"], inplace=True)
 
 # Encode categorical columns
 if "Type" in df.columns:
-    df["Type"] = LabelEncoder().fit_transform(df["Type"])
+    label_encoder = LabelEncoder()
+    df["Type"] = label_encoder.fit_transform(df["Type"])
 
 # --- Step 2: Split data ---
-target_col = "ProdTaken"
-if target_col not in df.columns:
-    raise ValueError(f"Target column '{target_col}' not found in dataset.")
+target_col = "Failure"
 X = df.drop(columns=[target_col])
 y = df[target_col]
 
