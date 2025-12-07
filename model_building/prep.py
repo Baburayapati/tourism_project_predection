@@ -23,7 +23,7 @@ if "Type" in df.columns:
     df["Type"] = label_encoder.fit_transform(df["Type"])
 
 # --- Step 2: Split data ---
-target_col = "Failure"
+target_col = "ProdTaken"
 X = df.drop(columns=[target_col])
 y = df[target_col]
 
