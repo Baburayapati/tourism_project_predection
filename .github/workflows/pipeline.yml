@@ -7,20 +7,16 @@ on:
 
 jobs:
 
-  register-dataset:
+register-dataset:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Install Dependencies
-        run: |
-          pip install huggingface_hub
-
+        run: pip install -r tourism_project_predection/requirements.txt
       - name: Upload Dataset to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          python model_building/upload_dataset.py
+        run: python tourism_project_predection/model_building/data_register.py
 
 
   data-prep:
@@ -31,13 +27,13 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r tourism_project_predection/requirements.txt
 
       - name: Run Data Preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python model_building/prep.py
+          python tourism_project_predection/model_building/prep.py
 
 
   model-traning:
@@ -48,7 +44,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r tourism_project_predection/requirements.txt
           pip install mlflow
 
       - name: Start MLflow Server
@@ -60,7 +56,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python model_building/train.py
+          python tourism_project_predection/model_building/train.py
 
 
   deploy-hosting:
@@ -77,4 +73,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python deploy/push_to_space.py   # <-- Adjust this path if deploy/ folder exists accordingly
+          python deployment/app.py   # <-- Adjust this path if deploy/ folder exists accordingly
