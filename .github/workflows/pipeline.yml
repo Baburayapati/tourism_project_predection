@@ -20,7 +20,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python tourism_project/model_building/upload_dataset.py
+          python model_building/upload_dataset.py
 
 
   data-prep:
@@ -31,13 +31,13 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r tourism_project/requirements.txt
+          pip install -r requirements.txt
 
       - name: Run Data Preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python tourism_project/model_building/prep.py
+          python model_building/prep.py
 
 
   model-traning:
@@ -48,7 +48,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r tourism_project/requirements.txt
+          pip install -r requirements.txt
           pip install mlflow
 
       - name: Start MLflow Server
@@ -60,7 +60,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python tourism_project/model_building/train.py
+          python model_building/train.py
 
 
   deploy-hosting:
@@ -77,4 +77,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python tourism_project/deployment/push_to_space.py
+          python deploy/push_to_space.py   # <-- Adjust this path if deploy/ folder exists accordingly
