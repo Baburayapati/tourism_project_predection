@@ -8,7 +8,7 @@ repo_id = "BabuRayapati/tourism_project"
 repo_type = "dataset"
 
 # Correct token handling
-HF_TOKEN = os.getenv("HF_TOKEN") or "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"
+HF_TOKEN = os.getenv("HF_TOKEN") or "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"
 api = HfApi(token=HF_TOKEN)
 
 # Step 1: Check if dataset repo exists
